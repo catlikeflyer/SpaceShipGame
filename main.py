@@ -42,18 +42,22 @@ ENEMY = pygame.transform.scale(ENEMY_IMAGE, (ENEMY_WIDTH, ENEMY_HEIGHT))
 # Fonts 
 INFO_FONT = pygame.font.SysFont('ubuntumono', 30) # Define font
 
+# Draws elements to be displayed on WIN
 def draw_display(ship, enemies, bullets):
     WIN.fill(BLACK)
     WIN.blit(SHIP, (ship.x, ship.y))
 
+    # Draw bullet inside bullets list
     for bullet in bullets:
         pygame.draw.rect(WIN, RED, bullet)
 
+    # Draw enemy from enemies list
     for enemy in enemies:
         WIN.blit(ENEMY, (enemy.x, enemy.y))
 
     pygame.display.update()
 
+# Shows text containing player stats
 def draw_text(lives, hits, level):
     lives_text = INFO_FONT.render(f"LIVES: {str(lives)}", 1, WHITE)
     hits_text = INFO_FONT.render(f'HITS: {str(hits)}', 1, WHITE)
@@ -63,6 +67,7 @@ def draw_text(lives, hits, level):
     WIN.blit(lives_text, (WIDTH-2-lives_text.get_width(), 2))
     pygame.display.update()
 
+# Moves player ship depending on the keys pressed
 def move_ship(ship):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and ship.y-VEL > BORDER.y:
@@ -74,6 +79,7 @@ def move_ship(ship):
     if keys[pygame.K_RIGHT] and ship.x+VEL < WIDTH-SHIP_WIDTH:
         ship.x += VEL
 
+# Automatically moves enemy based on a certain pattern
 def move_enemy(enemies, ship, speed=ENEMY_VEL):
     for enemy in enemies:
         if enemy.x+speed > WIDTH-enemy.width:
@@ -84,10 +90,12 @@ def move_enemy(enemies, ship, speed=ENEMY_VEL):
             enemies.remove(enemy)
         else: enemy.x += speed
 
+# Function storing bullet movements code
 def move_bullets(bullets):
     for bullet in bullets:
         bullet.y -= BULLET_VEL
 
+# Checks if enemy was hit or if the player was hit by an enemy
 def collide_check(ship, bullets, enemies):
     for bullet in bullets:
         if bullet.y < -10:
@@ -101,7 +109,6 @@ def collide_check(ship, bullets, enemies):
                 pygame.event.post(pygame.event.Event(SHIP_HIT))
                 enemies.remove(enemy)
             
-
 def main():
     enemy = pygame.Rect(WIDTH//2-ENEMY_WIDTH//2, 90, ENEMY_WIDTH, ENEMY_HEIGHT)
     ship = pygame.Rect(WIDTH//2-SHIP_WIDTH//2, 500, SHIP_WIDTH, SHIP_HEIGHT)
@@ -117,23 +124,27 @@ def main():
 
     run = True
 
+    # Run game
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
+            
+            # Shoot bullet if player hasn't used a full round of bullets
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and len(bullets) < MAX_BULLETS:
                     bullet = pygame.Rect(ship.x+ship.width//2-2, ship.y-ship.height+5, 1, 10)
                     bullets.append(bullet)
             
+            # Activated depending on event type
             if event.type == ENEMY_HIT:
                 hits += 1
             
             if event.type == SHIP_HIT:
                 lives -= 1
-                
+
+        # Create enemy waves 
         if len(enemies) == 0:
             level += 1
             if wave <= 10:
