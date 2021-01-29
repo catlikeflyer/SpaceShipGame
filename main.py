@@ -3,6 +3,7 @@ import pygame
 import os
 import random
 pygame.font.init()
+pygame.mixer.init()
 
 # Initialize window
 WIDTH, HEIGHT = 400, 600
@@ -34,17 +35,27 @@ SHIP_HIT = pygame.USEREVENT+2
 # Load assets
 SHIP_IMAGE = pygame.image.load(os.path.join("assets", "ship.png"))
 ENEMY_IMAGE = pygame.image.load(os.path.join("assets", "enemy.png"))
+BG_IMAGE = pygame.image.load(os.path.join("assets", "stars.jpg"))
+BLASTER = pygame.mixer.Sound(os.path.join("assets", "sf_laser_15.mp3"))
+ENEMY_EXPLODE = pygame.mixer.Sound(os.path.join("assets", "Explosion+1.mp3"))
+BGM = os.path.join("assets", "bgm.mp3")
 
 # Scale assets
 SHIP = pygame.transform.scale(SHIP_IMAGE, (SHIP_WIDTH, SHIP_HEIGHT))
 ENEMY = pygame.transform.scale(ENEMY_IMAGE, (ENEMY_WIDTH, ENEMY_HEIGHT))
+BG = pygame.transform.scale(BG_IMAGE, (WIDTH, HEIGHT))
 
 # Fonts 
 INFO_FONT = pygame.font.SysFont('ubuntumono', 30) # Define font
 
+# Play music
+pygame.mixer.music.load(BGM)
+pygame.mixer.music.play(-1) # If the loops is -1 then the music will repeat indefinitely.
+
 # Draws elements to be displayed on WIN
 def draw_display(ship, enemies, bullets):
     WIN.fill(BLACK)
+    WIN.blit(BG, (0, 0))
     WIN.blit(SHIP, (ship.x, ship.y))
 
     # Draw bullet inside bullets list
@@ -134,12 +145,14 @@ def main():
             # Shoot bullet if player hasn't used a full round of bullets
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and len(bullets) < MAX_BULLETS:
-                    bullet = pygame.Rect(ship.x+ship.width//2-2, ship.y-ship.height+5, 1, 10)
+                    bullet = pygame.Rect(ship.x+ship.width//2-2, ship.y-ship.height+5, 3, 10)
                     bullets.append(bullet)
+                    BLASTER.play()
             
             # Activated depending on event type
             if event.type == ENEMY_HIT:
                 hits += 1
+                ENEMY_EXPLODE.play()
             
             if event.type == SHIP_HIT:
                 lives -= 1
@@ -147,7 +160,7 @@ def main():
         # Create enemy waves 
         if len(enemies) == 0:
             level += 1
-            if wave <= 10:
+            if wave <= 9:
                 wave += 2
             else: enemy_vel += 1
              
